@@ -148,6 +148,7 @@ public class ReadingListClient {
 
     abstract void onSuccess(T response);
     abstract void onNotModified(T resp);
+    abstract void onSeeOther(T resp);
     abstract void onFailure(MozResponse response);
 
     @Override
@@ -260,6 +261,11 @@ public class ReadingListClient {
         delegate.onRecordReceived(record);
         delegate.onComplete();
       }
+
+      @Override
+      void onSeeOther(ReadingListRecordResponse resp) {
+        // Should never occur.
+      }
     };
   }
 
@@ -279,6 +285,11 @@ public class ReadingListClient {
         }
 
         delegate.onComplete();
+      }
+
+      @Override
+      void onSeeOther(ReadingListStorageResponse resp) {
+        // Should never occur.
       }
     };
   }
