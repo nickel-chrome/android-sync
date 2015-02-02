@@ -4,8 +4,11 @@
 
 package org.mozilla.gecko.reading;
 
+import org.mozilla.gecko.sync.net.MozResponse;
+
 public interface ReadingListRecordDelegate {
   void onRecordReceived(ReadingListRecord record);
   void onComplete();
-  void onFailure(Exception e);
+  void onFailure(MozResponse response);
+  void onFailure(Exception error);
 }

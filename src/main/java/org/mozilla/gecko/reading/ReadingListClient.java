@@ -219,7 +219,7 @@ public class ReadingListClient {
 
     @Override
     void onFailure(MozResponse response) {
-      delegate.onFailure(new RuntimeException("TODO"));
+      delegate.onFailure(response);
     }
 
     @Override
