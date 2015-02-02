@@ -5,6 +5,7 @@
 package org.mozilla.gecko.reading;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
@@ -292,5 +293,39 @@ public class ReadingListClient {
         // Should never occur.
       }
     };
+  }
+
+  public void add(final ReadingListRecord record, final ReadingListRecordUploadDelegate delegate) throws UnsupportedEncodingException {
+    final BaseResource r = new BaseResource(this.articlesURI);
+    r.delegate = new ReadingListRecordResourceDelegate<ReadingListRecordResponse>(r, auth, null, ReadingListRecordResponse.FACTORY, -1) {
+      @Override
+      void onFailure(MozResponse response) {
+        if (response.getStatusCode() == 400) {
+          // Error response.
+          delegate.onBadRequest(response);
+        }
+        super.onFailure(response);
+      }
+
+      @Override
+      void onSuccess(ReadingListRecordResponse response) {
+        final ReadingListRecord record;
+        try {
+          record = response.getRecord();
+        } catch (Exception e) {
+          delegate.onFailure(e);
+          return;
+        }
+
+        delegate.onSuccess(response, record);
+      }
+
+      @Override
+      void onSeeOther(ReadingListRecordResponse response) {
+        delegate.onConflict(response);
+      }
+    };
+
+    r.post(record.toJSON());
   }
 }
