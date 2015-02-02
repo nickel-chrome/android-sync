@@ -216,7 +216,7 @@ public class ReadingListClient {
 
     @Override
     void onNotModified(T resp) {
-      delegate.onComplete();
+      delegate.onComplete(resp);
     }
 
     @Override
@@ -260,7 +260,7 @@ public class ReadingListClient {
         }
 
         delegate.onRecordReceived(record);
-        delegate.onComplete();
+        delegate.onComplete(response);
       }
 
       @Override
@@ -285,7 +285,7 @@ public class ReadingListClient {
           return;
         }
 
-        delegate.onComplete();
+        delegate.onComplete(response);
       }
 
       @Override
