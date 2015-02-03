@@ -157,7 +157,7 @@ public class TestReadingListClient {
     Assert.assertEquals(record.url, uploadDelegate.record.url);
     Assert.assertEquals(record.title, uploadDelegate.record.title);
     Assert.assertEquals(record.addedBy, uploadDelegate.record.addedBy);
-    Assert.assertTrue(uploadDelegate.record.id != -1);
+    Assert.assertNotNull(uploadDelegate.record.id);
     Assert.assertTrue(lastServerTimestamp < uploadDelegate.record.lastModified);
 
     // Now fetch from our last timestamp.

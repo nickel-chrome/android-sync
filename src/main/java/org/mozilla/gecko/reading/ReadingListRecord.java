@@ -7,7 +7,7 @@ package org.mozilla.gecko.reading;
 import org.mozilla.gecko.sync.ExtendedJSONObject;
 
 public class ReadingListRecord {
-  public final int id;
+  public final String id;             // Null if not yet uploaded successfully.
   public final long lastModified;     // A server timestamp.
 
   public final String url;
@@ -21,7 +21,7 @@ public class ReadingListRecord {
   public ReadingListRecord(ExtendedJSONObject obj) {
     // Server populated.
     this.lastModified = obj.getLong("last_modified");
-    this.id = obj.getIntegerSafely("id");
+    this.id = obj.getString("_id");
 
     // Required fields.
     this.url = obj.getString("url");
@@ -30,7 +30,7 @@ public class ReadingListRecord {
   }
 
   public ReadingListRecord(String url, String title, String addedBy) {
-    this.id = -1;
+    this.id = null;
     this.lastModified = -1;
 
     // Required.
@@ -44,7 +44,7 @@ public class ReadingListRecord {
 
   public ExtendedJSONObject toJSON() {
     final ExtendedJSONObject object = new ExtendedJSONObject();
-    if (this.id != -1) {
+    if (this.id != null) {
       object.put("id", this.id);
     }
     object.put("url", this.url);
