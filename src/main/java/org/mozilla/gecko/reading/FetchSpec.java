@@ -88,5 +88,12 @@ public class FetchSpec {
       b.append(val);
       return this;
     }
+
+    public Builder setSince(long since) {
+      ampersand();
+      b.append("_since=");
+      b.append(since);
+      return this;
+    }
   }
 }
