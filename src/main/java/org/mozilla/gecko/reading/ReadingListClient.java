@@ -59,6 +59,15 @@ public class ReadingListClient {
    * A storage response that contains a single record.
    */
   public static class ReadingListRecordResponse extends ReadingListResponse {
+    @Override
+    public boolean wasSuccessful() {
+      final int code = getStatusCode();
+      if (code == 200 || code == 201) {
+        return true;
+      }
+      return super.wasSuccessful();
+    }
+
     public static final ResponseFactory<ReadingListRecordResponse> FACTORY = new ResponseFactory<ReadingListRecordResponse>() {
       @Override
       public ReadingListRecordResponse getResponse(HttpResponse r) {
