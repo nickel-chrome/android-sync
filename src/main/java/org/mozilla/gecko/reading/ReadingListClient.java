@@ -136,14 +136,12 @@ public class ReadingListClient {
   }
 
   private static abstract class ReadingListResourceDelegate<T extends ReadingListResponse> extends BaseResourceDelegate {
-    private final ReadingListRecordDelegate delegate;
     private final ResponseFactory<T> factory;
     private final AuthHeaderProvider auth;
 
-    public ReadingListResourceDelegate(Resource resource, AuthHeaderProvider auth, ReadingListRecordDelegate recordDelegate, ResponseFactory<T> factory) {
+    public ReadingListResourceDelegate(Resource resource, AuthHeaderProvider auth, ResponseFactory<T> factory) {
       super(resource);
       this.auth = auth;
-      this.delegate = recordDelegate;
       this.factory = factory;
     }
 
@@ -151,6 +149,7 @@ public class ReadingListClient {
     abstract void onNotModified(T resp);
     abstract void onSeeOther(T resp);
     abstract void onFailure(MozResponse response);
+    abstract void onFailure(Exception ex);
 
     @Override
     public void handleHttpResponse(HttpResponse response) {
@@ -168,17 +167,17 @@ public class ReadingListClient {
 
     @Override
     public void handleTransportException(GeneralSecurityException e) {
-      delegate.onFailure(e);
+      onFailure(e);
     }
 
     @Override
     public void handleHttpProtocolException(ClientProtocolException e) {
-      delegate.onFailure(e);
+      onFailure(e);
     }
 
     @Override
     public void handleHttpIOException(IOException e) {
-      delegate.onFailure(e);
+      onFailure(e);
     }
 
     @Override
@@ -209,7 +208,7 @@ public class ReadingListClient {
                                              ReadingListRecordDelegate delegate,
                                              ResponseFactory<T> factory,
                                              long ifModifiedSince) {
-      super(resource, auth, delegate, factory);
+      super(resource, auth, factory);
       this.delegate = delegate;
       this.ifModifiedSince = ifModifiedSince;
     }
@@ -222,6 +221,11 @@ public class ReadingListClient {
     @Override
     void onFailure(MozResponse response) {
       delegate.onFailure(response);
+    }
+
+    @Override
+    void onFailure(Exception ex) {
+      delegate.onFailure(ex);
     }
 
     @Override
@@ -264,10 +268,16 @@ public class ReadingListClient {
       }
 
       @Override
+      void onFailure(Exception ex) {
+        delegate.onFailure(ex);
+      }
+
+      @Override
       void onSeeOther(ReadingListRecordResponse resp) {
         // Should never occur.
       }
     };
+    r.get();
   }
 
   public void getAll(final FetchSpec spec, final ReadingListRecordDelegate delegate, final long ifModifiedSince) throws URISyntaxException {
@@ -293,18 +303,25 @@ public class ReadingListClient {
         // Should never occur.
       }
     };
+    r.get();
   }
 
   public void add(final ReadingListRecord record, final ReadingListRecordUploadDelegate delegate) throws UnsupportedEncodingException {
     final BaseResource r = new BaseResource(this.articlesURI);
-    r.delegate = new ReadingListRecordResourceDelegate<ReadingListRecordResponse>(r, auth, null, ReadingListRecordResponse.FACTORY, -1) {
+    r.delegate = new ReadingListResourceDelegate<ReadingListRecordResponse>(r, auth, ReadingListRecordResponse.FACTORY) {
       @Override
       void onFailure(MozResponse response) {
         if (response.getStatusCode() == 400) {
           // Error response.
           delegate.onBadRequest(response);
+        } else {
+          delegate.onFailure(response);
         }
-        super.onFailure(response);
+      }
+
+      @Override
+      void onFailure(Exception ex) {
+        delegate.onFailure(ex);
       }
 
       @Override
@@ -323,6 +340,11 @@ public class ReadingListClient {
       @Override
       void onSeeOther(ReadingListRecordResponse response) {
         delegate.onConflict(response);
+      }
+
+      @Override
+      void onNotModified(ReadingListRecordResponse resp) {
+        // Should not occur.
       }
     };
 

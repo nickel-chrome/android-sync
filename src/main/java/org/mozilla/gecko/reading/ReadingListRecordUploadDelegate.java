@@ -14,4 +14,5 @@ public interface ReadingListRecordUploadDelegate {
   public void onSuccess(ReadingListRecordResponse response, ReadingListRecord record);
   public void onBadRequest(MozResponse response);
   public void onFailure(Exception ex);
+  public void onFailure(MozResponse response);
 }
