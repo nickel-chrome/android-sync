@@ -48,9 +48,8 @@ public class ReadingListRecord {
       object.put("id", this.id);
     }
     object.put("url", this.url);
-    if (this.title != null) {
-      object.put("title", this.title);
-    }
+    object.put("title", this.title);
+    object.put("added_by", this.addedBy);
     return object;
   }
 }
