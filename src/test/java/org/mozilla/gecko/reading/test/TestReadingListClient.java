@@ -4,9 +4,9 @@
 
 package org.mozilla.gecko.reading.test;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -29,7 +29,7 @@ public class TestReadingListClient {
     public volatile Exception error;
     public volatile MozResponse mozResponse;
     public volatile ReadingListResponse response;
-    public volatile ReadingListRecord record;
+    public final List<ReadingListRecord> records = new ArrayList<ReadingListRecord>();
     public volatile boolean called;
 
     public TestRecordDelegate(CountDownLatch latch) {
@@ -39,7 +39,7 @@ public class TestReadingListClient {
     @Override
     public void onRecordReceived(ReadingListRecord record) {
       this.called = true;
-      this.record = record;
+      this.records.add(record);
     }
 
     @Override
@@ -116,20 +116,54 @@ public class TestReadingListClient {
 
   private static final String DEFAULT_SERVICE_URI = "https://readinglist.dev.mozaws.net/v0/";
 
-  @Test
-  public final void test() throws URISyntaxException, InterruptedException, UnsupportedEncodingException {
-    CountDownLatch latch;
-
-    final AuthHeaderProvider auth = new BasicAuthHeaderProvider("rnewmantest", "nopassword");
-    final ReadingListClient client = new ReadingListClient(new URI(DEFAULT_SERVICE_URI), auth);
+  private TestRecordDelegate fetchAll(final ReadingListClient client) throws Exception {
+    final FetchSpec spec = new FetchSpec.Builder()
+                                        .setStatus("0", false)
+                                        .build();
     final long ifModifiedSince = -1L;
-    final FetchSpec spec = new FetchSpec.Builder().setStatus("0", false).build();
+    return fetch(client, spec, ifModifiedSince);
+  }
 
-    latch = new CountDownLatch(1);
+  private TestRecordDelegate fetchSince(final ReadingListClient client, final long since) throws Exception {
+    final FetchSpec spec = new FetchSpec.Builder()
+                                        .setSince(since)
+                                        .build();
+    final long ifModifiedSince = -1L;
+    return fetch(client, spec, ifModifiedSince);
+  }
+
+  private TestRecordDelegate fetchIMS(final ReadingListClient client, final long ifModifiedSince) throws Exception {
+    final FetchSpec spec = new FetchSpec.Builder()
+                                        .build();
+    return fetch(client, spec, ifModifiedSince);
+  }
+
+  private TestRecordDelegate fetch(final ReadingListClient client,
+                                   final FetchSpec spec,
+                                   final long ifModifiedSince) throws Exception {
+    final CountDownLatch latch = new CountDownLatch(1);
     final TestRecordDelegate delegate = new TestRecordDelegate(latch);
 
     client.getAll(spec, delegate, ifModifiedSince);
     latch.await(10000, TimeUnit.MILLISECONDS);
+    return delegate;
+  }
+
+  final TestRecordUploadDelegate uploadRecord(final ReadingListClient client, final ReadingListRecord record) throws Exception {
+    final CountDownLatch latch = new CountDownLatch(1);
+    final TestRecordUploadDelegate uploadDelegate = new TestRecordUploadDelegate(latch);
+
+    client.add(record, uploadDelegate);
+    latch.await(5000, TimeUnit.MILLISECONDS);
+    return uploadDelegate;
+  }
+
+  @Test
+  public final void test() throws Exception {
+    final AuthHeaderProvider auth = new BasicAuthHeaderProvider("rnewmantest", "nopassword");
+    final ReadingListClient client = new ReadingListClient(new URI(DEFAULT_SERVICE_URI), auth);
+
+    final TestRecordDelegate delegate = fetchAll(client);
 
     Assert.assertTrue(delegate.called);
     Assert.assertNull(delegate.error);
@@ -140,15 +174,12 @@ public class TestReadingListClient {
     Assert.assertTrue(lastServerTimestamp > -1L);
 
     // Upload a record.
-    latch = new CountDownLatch(1);
-    final TestRecordUploadDelegate uploadDelegate = new TestRecordUploadDelegate(latch);
     final ReadingListRecord record = new ReadingListRecord("http://reddit.com", "Reddit", "Test Device");
     Assert.assertEquals(record.url, "http://reddit.com");
     Assert.assertEquals(record.title, "Reddit");
     Assert.assertEquals(record.addedBy, "Test Device");
 
-    client.add(record, uploadDelegate);
-    latch.await(5000, TimeUnit.MILLISECONDS);
+    final TestRecordUploadDelegate uploadDelegate = uploadRecord(client, record);
 
     Assert.assertNull(uploadDelegate.error);
     Assert.assertNull(uploadDelegate.mozResponse);
@@ -158,8 +189,20 @@ public class TestReadingListClient {
     Assert.assertEquals(record.title, uploadDelegate.record.title);
     Assert.assertEquals(record.addedBy, uploadDelegate.record.addedBy);
     Assert.assertNotNull(uploadDelegate.record.id);
+    Assert.assertEquals(201, uploadDelegate.response.getStatusCode());
     Assert.assertTrue(lastServerTimestamp < uploadDelegate.record.lastModified);
 
-    // Now fetch from our last timestamp.
+    // Implementation detail.
+    final long uploadLastModified = uploadDelegate.response.getLastModified();
+    Assert.assertEquals(-1L, uploadLastModified);
+
+    // Now fetch from our last timestamp. The record we uploaded should always be included,
+    // but nothing earlier.
+    final TestRecordDelegate sinceDelegate = fetchSince(client, lastServerTimestamp);
+    Assert.assertEquals(1, sinceDelegate.records.size());
+
+    // Another fetch with an If-Modified-Since should return a 304.
+    final TestRecordDelegate nothingDelegate = fetchIMS(client, sinceDelegate.response.getLastModified());
+    Assert.assertEquals(304, nothingDelegate.response.getStatusCode());
   }
 }
