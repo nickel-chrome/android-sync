@@ -16,6 +16,7 @@ import org.mozilla.gecko.reading.FetchSpec;
 import org.mozilla.gecko.reading.ReadingListClient;
 import org.mozilla.gecko.reading.ReadingListClient.ReadingListRecordResponse;
 import org.mozilla.gecko.reading.ReadingListClient.ReadingListResponse;
+import org.mozilla.gecko.reading.ReadingListDeleteDelegate;
 import org.mozilla.gecko.reading.ReadingListRecord;
 import org.mozilla.gecko.reading.ReadingListRecordDelegate;
 import org.mozilla.gecko.reading.ReadingListRecordUploadDelegate;
@@ -24,6 +25,54 @@ import org.mozilla.gecko.sync.net.BasicAuthHeaderProvider;
 import org.mozilla.gecko.sync.net.MozResponse;
 
 public class TestReadingListClient {
+  public class TestRecordDeleteDelegate implements ReadingListDeleteDelegate {
+    public volatile ReadingListRecordResponse response;
+    public volatile ReadingListRecord record;
+    public volatile String guid;
+    public volatile Exception error;
+    public volatile MozResponse mozResponse;
+
+    private final CountDownLatch latch;
+
+    public TestRecordDeleteDelegate(CountDownLatch latch) {
+      this.latch = latch;
+    }
+
+    @Override
+    public void onSuccess(ReadingListRecordResponse response,
+                          ReadingListRecord record) {
+      this.response = response;
+      this.record = record;
+      latch.countDown();
+    }
+
+    @Override
+    public void onPreconditionFailed(String guid, MozResponse response) {
+      this.mozResponse = response;
+      this.guid = guid;
+      latch.countDown();
+    }
+
+    @Override
+    public void onRecordMissingOrDeleted(String guid, MozResponse response) {
+      this.mozResponse = response;
+      this.guid = guid;
+      latch.countDown();
+    }
+
+    @Override
+    public void onFailure(Exception e) {
+      this.error = e;
+      latch.countDown();
+    }
+
+    @Override
+    public void onFailure(MozResponse response) {
+      this.mozResponse = response;
+      latch.countDown();
+    }
+  }
+
   public static final class TestRecordDelegate implements ReadingListRecordDelegate {
     private final CountDownLatch latch;
     public volatile Exception error;
@@ -158,12 +207,23 @@ public class TestReadingListClient {
     return uploadDelegate;
   }
 
+  final TestRecordDeleteDelegate deleteRecord(final ReadingListClient client, final ReadingListRecord record) throws Exception {
+    final CountDownLatch latch = new CountDownLatch(1);
+    final TestRecordDeleteDelegate deleteDelegate = new TestRecordDeleteDelegate(latch);
+
+    client.delete(record.id, deleteDelegate, record.lastModified);
+    latch.await(5000, TimeUnit.MILLISECONDS);
+    return deleteDelegate;
+  }
+
   @Test
   public final void test() throws Exception {
     final AuthHeaderProvider auth = new BasicAuthHeaderProvider("rnewmantest", "nopassword");
     final ReadingListClient client = new ReadingListClient(new URI(DEFAULT_SERVICE_URI), auth);
 
     final TestRecordDelegate delegate = fetchAll(client);
+
+    final List<ReadingListRecord> existingRecords = delegate.records;
 
     Assert.assertTrue(delegate.called);
     Assert.assertNull(delegate.error);
@@ -204,5 +264,18 @@ public class TestReadingListClient {
     // Another fetch with an If-Modified-Since should return a 304.
     final TestRecordDelegate nothingDelegate = fetchIMS(client, sinceDelegate.response.getLastModified());
     Assert.assertEquals(304, nothingDelegate.response.getStatusCode());
+
+    // Delete all the old records.
+    for (ReadingListRecord rec : existingRecords) {
+      final TestRecordDeleteDelegate deleteDelegate = deleteRecord(client, rec);
+      Assert.assertTrue(deleteDelegate.response.wasSuccessful());
+      Assert.assertEquals(200, deleteDelegate.response.getStatusCode());
+      Assert.assertNull(deleteDelegate.guid);       // Only set on failure.
+      Assert.assertEquals(rec.id, deleteDelegate.record.id);
+    }
+
+    // The new records should still be around.
+    final TestRecordDelegate afterDelegate = fetchSince(client, lastServerTimestamp);
+    Assert.assertEquals(1, afterDelegate.records.size());
   }
 }
