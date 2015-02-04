@@ -40,7 +40,8 @@ public class ReadingListClient {
   private final URI serviceURI;
   private final AuthHeaderProvider auth;
 
-  private URI articlesURI;
+  private final URI articlesURI;              // .../articles
+  private final URI articlesBaseURI;          // .../articles/
 
   /**
    * A MozResponse that knows about all of the general RL-related headers, like Last-Modified.
@@ -246,8 +247,8 @@ public class ReadingListClient {
     }
   }
 
-  private BaseResource getRelativeResource(final String rel) {
-    return new BaseResource(this.articlesURI.resolve(rel));
+  private BaseResource getRelativeArticleResource(final String rel) {
+    return new BaseResource(this.articlesBaseURI.resolve(rel));
   }
 
   /**
@@ -256,11 +257,12 @@ public class ReadingListClient {
   public ReadingListClient(final URI serviceURI, final AuthHeaderProvider auth) {
     this.serviceURI = serviceURI;
     this.articlesURI = serviceURI.resolve("articles");
+    this.articlesBaseURI = serviceURI.resolve("articles/");
     this.auth = auth;
   }
 
-  public void getOne(final int id, final ReadingListRecordDelegate delegate, final long ifModifiedSince) {
-    final BaseResource r = getRelativeResource("" + id);
+  public void getOne(final String guid, final ReadingListRecordDelegate delegate, final long ifModifiedSince) {
+    final BaseResource r = getRelativeArticleResource(guid);
     r.delegate = new ReadingListRecordResourceDelegate<ReadingListRecordResponse>(r, auth, delegate, ReadingListRecordResponse.FACTORY, ifModifiedSince) {
       @Override
       void onSuccess(ReadingListRecordResponse response) {
