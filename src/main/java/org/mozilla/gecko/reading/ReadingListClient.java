@@ -361,4 +361,65 @@ public class ReadingListClient {
 
     r.post(record.toJSON());
   }
+
+  public void delete(final String guid, final ReadingListDeleteDelegate delegate, final long ifUnmodifiedSince) {
+    final BaseResource r = getRelativeArticleResource(guid);
+
+    // If If-Unmodified-Since is provided, and the record has been modified,
+    // we'll receive a 412 Precondition Failed.
+    // If the record is missing or already deleted, a 404 will be returned.
+    // Otherwise, the response will be the deleted record.
+    r.delegate = new ReadingListResourceDelegate<ReadingListRecordResponse>(r, auth, ReadingListRecordResponse.FACTORY) {
+      @Override
+      public void addHeaders(HttpRequestBase request, DefaultHttpClient client) {
+        if (ifUnmodifiedSince != -1) {
+          request.addHeader("If-Unmodified-Since", "" + ifUnmodifiedSince);
+        }
+        super.addHeaders(request, client);
+      }
+
+      @Override
+      void onFailure(MozResponse response) {
+        switch (response.getStatusCode()) {
+        case 412:
+          delegate.onPreconditionFailed(guid, response);
+          return;
+        case 404:
+          delegate.onRecordMissingOrDeleted(guid, response);
+          return;
+        }
+        delegate.onFailure(response);
+      }
+
+      @Override
+      void onSuccess(ReadingListRecordResponse response) {
+        final ReadingListRecord record;
+        try {
+          record = response.getRecord();
+        } catch (Exception e) {
+          delegate.onFailure(e);
+          return;
+        }
+
+        delegate.onSuccess(response, record);
+      }
+
+      @Override
+      void onFailure(Exception ex) {
+        delegate.onFailure(ex);
+      }
+
+      @Override
+      void onSeeOther(ReadingListRecordResponse resp) {
+        // Shouldn't occur.
+      }
+
+      @Override
+      void onNotModified(ReadingListRecordResponse resp) {
+        // Shouldn't occur.
+      }
+    };
+
+    r.delete();
+  }
 }
