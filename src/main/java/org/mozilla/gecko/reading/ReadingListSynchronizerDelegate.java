@@ -5,5 +5,6 @@
 package org.mozilla.gecko.reading;
 
 public interface ReadingListSynchronizerDelegate {
-
+  void onUnableToSync(Exception e);
+  void onStatusUploadComplete(int count);
 }
