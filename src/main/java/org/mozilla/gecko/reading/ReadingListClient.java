@@ -63,7 +63,7 @@ public class ReadingListClient {
     @Override
     public boolean wasSuccessful() {
       final int code = getStatusCode();
-      if (code == 200 || code == 201) {
+      if (code == 200 || code == 201 || code == 204) {
         return true;
       }
       return super.wasSuccessful();
