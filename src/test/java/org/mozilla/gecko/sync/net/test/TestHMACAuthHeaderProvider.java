@@ -13,10 +13,10 @@ import java.security.NoSuchAlgorithmException;
 import org.junit.Test;
 import org.mozilla.gecko.sync.net.HMACAuthHeaderProvider;
 
-import ch.boye.httpclientandroidlib.client.methods.HttpGet;
-import ch.boye.httpclientandroidlib.client.methods.HttpPost;
-import ch.boye.httpclientandroidlib.client.methods.HttpRequestBase;
-import ch.boye.httpclientandroidlib.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.HttpUriRequest;
 
 public class TestHMACAuthHeaderProvider {
   // Expose a few protected static member functions as public for testing.

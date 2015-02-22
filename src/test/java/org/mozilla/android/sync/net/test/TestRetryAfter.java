@@ -8,11 +8,11 @@ import static org.junit.Assert.assertTrue;
 
 import org.mozilla.gecko.sync.net.SyncResponse;
 
-import ch.boye.httpclientandroidlib.HttpResponse;
-import ch.boye.httpclientandroidlib.ProtocolVersion;
-import ch.boye.httpclientandroidlib.impl.cookie.DateUtils;
-import ch.boye.httpclientandroidlib.message.BasicHttpResponse;
-import ch.boye.httpclientandroidlib.message.BasicStatusLine;
+import org.apache.http.HttpResponse;
+import org.apache.http.ProtocolVersion;
+import org.apache.http.impl.cookie.DateUtils;
+import org.apache.http.message.BasicHttpResponse;
+import org.apache.http.message.BasicStatusLine;
 
 public class TestRetryAfter {
   private int TEST_SECONDS = 120;

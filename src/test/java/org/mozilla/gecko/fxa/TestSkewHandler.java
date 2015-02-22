@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.mozilla.gecko.background.fxa.SkewHandler;
 import org.mozilla.gecko.sync.net.BaseResource;
 
-import ch.boye.httpclientandroidlib.impl.cookie.DateUtils;
+import org.apache.http.impl.cookie.DateUtils;
 
 public class TestSkewHandler {
   public TestSkewHandler() {

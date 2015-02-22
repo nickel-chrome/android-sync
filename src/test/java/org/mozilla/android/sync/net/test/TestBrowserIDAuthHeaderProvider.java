@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.mozilla.gecko.sync.net.BrowserIDAuthHeaderProvider;
 
-import ch.boye.httpclientandroidlib.Header;
+import org.apache.http.Header;
 
 public class TestBrowserIDAuthHeaderProvider {
   @Test

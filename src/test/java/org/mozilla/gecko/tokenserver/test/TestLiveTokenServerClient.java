@@ -10,8 +10,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mozilla.android.sync.test.integration.IntegrationTestCategory;
 import org.mozilla.gecko.background.fxa.FxAccountUtils;
 import org.mozilla.gecko.background.testhelpers.WaitHelper;
 import org.mozilla.gecko.browserid.BrowserIDKeyPair;
@@ -25,7 +23,6 @@ import org.mozilla.gecko.tokenserver.TokenServerException;
 import org.mozilla.gecko.tokenserver.TokenServerException.TokenServerInvalidCredentialsException;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
 
-@Category(IntegrationTestCategory.class)
 public class TestLiveTokenServerClient {
   public static final String TEST_USERNAME = "test";
 

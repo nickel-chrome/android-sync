@@ -14,15 +14,15 @@ import java.security.NoSuchAlgorithmException;
 import org.junit.Test;
 import org.mozilla.gecko.sync.net.HawkAuthHeaderProvider;
 
-import ch.boye.httpclientandroidlib.Header;
-import ch.boye.httpclientandroidlib.client.methods.HttpGet;
-import ch.boye.httpclientandroidlib.client.methods.HttpPost;
-import ch.boye.httpclientandroidlib.client.methods.HttpRequestBase;
-import ch.boye.httpclientandroidlib.client.methods.HttpUriRequest;
-import ch.boye.httpclientandroidlib.entity.StringEntity;
-import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
-import ch.boye.httpclientandroidlib.message.BasicHeader;
-import ch.boye.httpclientandroidlib.protocol.BasicHttpContext;
+import org.apache.http.Header;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.protocol.BasicHttpContext;
 
 /**
  * These test vectors were taken from
@@ -49,7 +49,7 @@ public class TestHawkAuthHeaderProvider {
 
     // Public for testing.
     @Override
-    public Header getAuthHeader(HttpRequestBase request, BasicHttpContext context, DefaultHttpClient client,
+    public Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, DefaultHttpClient client,
         long timestamp, String nonce, String extra, boolean includePayloadHash)
             throws InvalidKeyException, NoSuchAlgorithmException, IOException {
       return super.getAuthHeader(request, context, client, timestamp, nonce, extra, includePayloadHash);

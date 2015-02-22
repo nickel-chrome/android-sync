@@ -8,8 +8,6 @@ import java.net.URI;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mozilla.android.sync.test.integration.IntegrationTestCategory;
 import org.mozilla.gecko.background.testhelpers.WaitHelper;
 import org.mozilla.gecko.browserid.BrowserIDKeyPair;
 import org.mozilla.gecko.browserid.DSACryptoImplementation;
@@ -22,7 +20,6 @@ import org.mozilla.gecko.browserid.verifier.BrowserIDRemoteVerifierClient;
 import org.mozilla.gecko.browserid.verifier.BrowserIDVerifierDelegate;
 import org.mozilla.gecko.sync.ExtendedJSONObject;
 
-@Category(IntegrationTestCategory.class)
 public class TestLiveMockMyIDTokenFactory {
   public static String TEST_USERNAME = "test";
   public static String TEST_CERTIFICATE_ISSUER = "mockmyid.com";

@@ -10,7 +10,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 import org.junit.Test;
-import org.mozilla.apache.commons.codec.binary.Base32;
+import org.apache.commons.codec.binary.Base32;
 import org.mozilla.gecko.sync.Utils;
 
 public class TestBase32 {

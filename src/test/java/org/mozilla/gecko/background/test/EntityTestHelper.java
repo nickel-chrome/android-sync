@@ -8,7 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import ch.boye.httpclientandroidlib.HttpEntity;
+import org.apache.http.HttpEntity;
 
 public class EntityTestHelper {
   private static final int DEFAULT_SIZE = 1024;

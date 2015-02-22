@@ -10,9 +10,7 @@ import java.util.concurrent.Executors;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mozilla.android.sync.test.integration.IntegrationTestCategory;
-import org.mozilla.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Base64;
 import org.mozilla.gecko.background.fxa.FxAccountClient10;
 import org.mozilla.gecko.background.fxa.FxAccountClient10.RequestDelegate;
 import org.mozilla.gecko.background.fxa.FxAccountClient10.StatusResponse;
@@ -28,7 +26,6 @@ import org.mozilla.gecko.sync.ExtendedJSONObject;
 import org.mozilla.gecko.sync.Utils;
 import org.mozilla.gecko.sync.net.BaseResource;
 
-@Category(IntegrationTestCategory.class)
 public class TestLiveFxAccountClient20 {
   protected static final String TEST_SERVERURI = "http://127.0.0.1:9000/v1";
   protected static final String TEST_AUDIENCE = TEST_SERVERURI;

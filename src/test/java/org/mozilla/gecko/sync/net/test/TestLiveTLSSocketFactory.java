@@ -9,15 +9,13 @@ import java.security.GeneralSecurityException;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mozilla.android.sync.test.integration.IntegrationTestCategory;
 import org.mozilla.gecko.background.testhelpers.WaitHelper;
 import org.mozilla.gecko.sync.net.BaseResource;
 import org.mozilla.gecko.sync.net.BaseResourceDelegate;
 import org.mozilla.gecko.sync.net.SyncResponse;
 
-import ch.boye.httpclientandroidlib.HttpResponse;
-import ch.boye.httpclientandroidlib.client.ClientProtocolException;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
 
 /**
  * Android Services code talks to several different HTTPS endpoints. Some of
@@ -25,7 +23,6 @@ import ch.boye.httpclientandroidlib.client.ClientProtocolException;
  * ciphersuites by connecting to the Digicert and GeoTrust SSL test servers;
  * GeoTrust's test server accepts weaker ciphersuites than Digicert's.
  */
-@Category(IntegrationTestCategory.class)
 public class TestLiveTLSSocketFactory {
   protected static void testSSLConnection(String uri) throws URISyntaxException {
     final BaseResource r = new BaseResource(uri);

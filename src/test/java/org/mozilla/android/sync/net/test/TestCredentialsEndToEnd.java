@@ -15,7 +15,7 @@ import org.mozilla.gecko.sync.NonObjectJSONException;
 import org.mozilla.gecko.sync.Utils;
 import org.mozilla.gecko.sync.net.BasicAuthHeaderProvider;
 
-import ch.boye.httpclientandroidlib.Header;
+import org.apache.http.Header;
 
 /**
  * Test the transfer of a UTF-8 string from desktop, and ensure that it results in the

@@ -8,10 +8,8 @@ package org.mozilla.gecko.sync;
  * Preprocessed class for storing preprocessed values specific to Android Sync.
  */
 public class SyncConstants {
-  public static final String GLOBAL_LOG_TAG = "FxSync";
-  public static final String SYNC_MAJOR_VERSION  = "1";
-  public static final String SYNC_MINOR_VERSION  = "0";
-  public static final String SYNC_VERSION_STRING = SYNC_MAJOR_VERSION + ".0." + SYNC_MINOR_VERSION;
+  public static final String GLOBAL_LOG_TAG = "FxaClient";
+  public static final String SYNC_VERSION_STRING = "1.0.0-alpha-1";
 
   public static final String USER_AGENT = "FxAccountClient/" + SYNC_VERSION_STRING;
 
