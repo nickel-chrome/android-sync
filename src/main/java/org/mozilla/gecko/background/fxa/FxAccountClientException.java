@@ -4,13 +4,12 @@
 
 package org.mozilla.gecko.background.fxa;
 
-import org.mozilla.gecko.R;
 import org.mozilla.gecko.sync.ExtendedJSONObject;
 import org.mozilla.gecko.sync.HTTPFailureException;
 import org.mozilla.gecko.sync.net.SyncStorageResponse;
 
-import ch.boye.httpclientandroidlib.HttpResponse;
-import ch.boye.httpclientandroidlib.HttpStatus;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 
 /**
  * From <a href="https://github.com/mozilla/fxa-auth-server/blob/master/docs/api.md">https://github.com/mozilla/fxa-auth-server/blob/master/docs/api.md</a>.
@@ -101,6 +100,9 @@ public class FxAccountClientException extends Exception {
     }
 
     public int getErrorMessageStringResource() {
+      return -1;
+      
+      /*
       if (isUpgradeRequired()) {
         return R.string.fxaccount_remote_error_UPGRADE_REQUIRED;
       } else if (isAccountAlreadyExists()) {
@@ -120,6 +122,7 @@ public class FxAccountClientException extends Exception {
       } else {
         return R.string.fxaccount_remote_error_UNKNOWN_ERROR;
       }
+      */
     }
   }
 

@@ -4,11 +4,12 @@
 
 package org.mozilla.gecko.sync.net;
 
-import ch.boye.httpclientandroidlib.Header;
-import ch.boye.httpclientandroidlib.client.methods.HttpRequestBase;
-import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
-import ch.boye.httpclientandroidlib.message.BasicHeader;
-import ch.boye.httpclientandroidlib.protocol.BasicHttpContext;
+import org.apache.http.Header;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.protocol.BasicHttpContext;
 
 /**
  * An <code>AuthHeaderProvider</code> that returns an Authorization header for
@@ -29,7 +30,7 @@ public class BrowserIDAuthHeaderProvider implements AuthHeaderProvider {
   }
 
   @Override
-  public Header getAuthHeader(HttpRequestBase request, BasicHttpContext context, DefaultHttpClient client) {
+  public Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, DefaultHttpClient client) {
     Header header = new BasicHeader("Authorization", "BrowserID " + assertion);
 
     return header;

@@ -4,8 +4,8 @@
 
 package org.mozilla.gecko.sync.net;
 
-import ch.boye.httpclientandroidlib.client.methods.HttpRequestBase;
-import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
  * Shared abstract class for resource delegate that use the same timeouts

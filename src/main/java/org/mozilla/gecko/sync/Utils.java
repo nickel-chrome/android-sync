@@ -4,10 +4,6 @@
 
 package org.mozilla.gecko.sync;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -25,19 +21,10 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.json.simple.JSONArray;
-import org.mozilla.apache.commons.codec.binary.Base32;
-import org.mozilla.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Base32;
+import org.apache.commons.codec.binary.Base64;
 import org.mozilla.gecko.background.common.log.Logger;
 import org.mozilla.gecko.background.nativecode.NativeCrypto;
-import org.mozilla.gecko.sync.setup.Constants;
-
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.text.Spannable;
-import android.text.Spanned;
-import android.text.style.ClickableSpan;
 
 public class Utils {
 
@@ -144,7 +131,7 @@ public class Utils {
     return Base64.decodeBase64(base64.getBytes("UTF-8"));
   }
 
-  @SuppressLint("DefaultLocale")
+  @SuppressWarnings("DefaultLocale")
   public static byte[] decodeFriendlyBase32(String base32) {
     Base32 converter = new Base32();
     final String translated = base32.replace('8', 'l').replace('9', 'o');
@@ -251,12 +238,6 @@ public class Utils {
       return account.toLowerCase(Locale.US);
     }
     return sha1Base32(account.toLowerCase(Locale.US));
-  }
-
-  public static SharedPreferences getSharedPreferences(final Context context, final String product, final String username, final String serverURL, final String profile, final long version)
-      throws NoSuchAlgorithmException, UnsupportedEncodingException {
-    String prefsPath = getPrefsPath(product, username, serverURL, profile, version);
-    return context.getSharedPreferences(prefsPath, SHARED_PREFERENCES_MODE);
   }
 
   /**
@@ -411,128 +392,6 @@ public class Utils {
   }
 
   /**
-   * Get names of stages to sync: (ALL intersect SYNC) intersect (ALL minus SKIP).
-   *
-   * @param knownStageNames collection of known stage names (set ALL above).
-   * @param extras
-   *          a <code>Bundle</code> instance (possibly null) optionally containing keys
-   *          <code>EXTRAS_KEY_STAGES_TO_SYNC</code> (set SYNC above) and
-   *          <code>EXTRAS_KEY_STAGES_TO_SKIP</code> (set SKIP above).
-   * @return stage names.
-   */
-  public static Collection<String> getStagesToSyncFromBundle(final Collection<String> knownStageNames, final Bundle extras) {
-    if (extras == null) {
-      return knownStageNames;
-    }
-    String toSyncString = extras.getString(Constants.EXTRAS_KEY_STAGES_TO_SYNC);
-    String toSkipString = extras.getString(Constants.EXTRAS_KEY_STAGES_TO_SKIP);
-    if (toSyncString == null && toSkipString == null) {
-      return knownStageNames;
-    }
-
-    ArrayList<String> toSync = null;
-    ArrayList<String> toSkip = null;
-    if (toSyncString != null) {
-      try {
-        toSync = new ArrayList<String>(ExtendedJSONObject.parseJSONObject(toSyncString).keySet());
-      } catch (Exception e) {
-        Logger.warn(LOG_TAG, "Got exception parsing stages to sync: '" + toSyncString + "'.", e);
-      }
-    }
-    if (toSkipString != null) {
-      try {
-        toSkip = new ArrayList<String>(ExtendedJSONObject.parseJSONObject(toSkipString).keySet());
-      } catch (Exception e) {
-        Logger.warn(LOG_TAG, "Got exception parsing stages to skip: '" + toSkipString + "'.", e);
-      }
-    }
-
-    Logger.info(LOG_TAG, "Asked to sync '" + Utils.toCommaSeparatedString(toSync) +
-                         "' and to skip '" + Utils.toCommaSeparatedString(toSkip) + "'.");
-    return getStagesToSync(knownStageNames, toSync, toSkip);
-  }
-
-  /**
-   * Put names of stages to sync and to skip into sync extras bundle.
-   *
-   * @param bundle
-   *          a <code>Bundle</code> instance (possibly null).
-   * @param stagesToSync
-   *          collection of stage names to sync: key
-   *          <code>EXTRAS_KEY_STAGES_TO_SYNC</code>; ignored if <code>null</code>.
-   * @param stagesToSkip
-   *          collection of stage names to skip: key
-   *          <code>EXTRAS_KEY_STAGES_TO_SKIP</code>; ignored if <code>null</code>.
-   */
-  public static void putStageNamesToSync(final Bundle bundle, final String[] stagesToSync, final String[] stagesToSkip) {
-    if (bundle == null) {
-      return;
-    }
-
-    if (stagesToSync != null) {
-      ExtendedJSONObject o = new ExtendedJSONObject();
-      for (String stageName : stagesToSync) {
-        o.put(stageName, 0);
-      }
-      bundle.putString(Constants.EXTRAS_KEY_STAGES_TO_SYNC, o.toJSONString());
-    }
-
-    if (stagesToSkip != null) {
-      ExtendedJSONObject o = new ExtendedJSONObject();
-      for (String stageName : stagesToSkip) {
-        o.put(stageName, 0);
-      }
-      bundle.putString(Constants.EXTRAS_KEY_STAGES_TO_SKIP, o.toJSONString());
-    }
-  }
-
-  /**
-   * Read contents of file as a string.
-   *
-   * @param context Android context.
-   * @param filename name of file to read; must not be null.
-   * @return <code>String</code> instance.
-   */
-  public static String readFile(final Context context, final String filename) {
-    if (filename == null) {
-      throw new IllegalArgumentException("Passed null filename in readFile.");
-    }
-
-    FileInputStream fis = null;
-    InputStreamReader isr = null;
-    BufferedReader br = null;
-
-    try {
-      fis = context.openFileInput(filename);
-      isr = new InputStreamReader(fis);
-      br = new BufferedReader(isr);
-      StringBuilder sb = new StringBuilder();
-      String line;
-      while ((line = br.readLine()) != null) {
-        sb.append(line);
-      }
-      return sb.toString();
-    } catch (Exception e) {
-      return null;
-    } finally {
-      if (isr != null) {
-        try {
-          isr.close();
-        } catch (IOException e) {
-          // Ignore.
-        }
-      }
-      if (fis != null) {
-        try {
-          fis.close();
-        } catch (IOException e) {
-          // Ignore.
-        }
-      }
-    }
-  }
-
-  /**
    * Format a duration as a string, like "0.56 seconds".
    *
    * @param startMillis start time in milliseconds.
@@ -616,27 +475,5 @@ public class Utils {
       return language;
     }
     return language + "-" + country;
-  }
-
-  /**
-   * Make a span with a clickable chunk of text interpolated in.
-   *
-   * @param context Android context.
-   * @param messageId of string containing clickable chunk.
-   * @param clickableId of string to make clickable.
-   * @param clickableSpan to activate on click.
-   * @return Spannable.
-   */
-  public static Spannable interpolateClickableSpan(Context context, int messageId, int clickableId, ClickableSpan clickableSpan) {
-    // This horrible bit of special-casing is because we want this error message to
-    // contain a clickable, extra chunk of text, but we don't want to pollute
-    // the exception class with Android specifics.
-    final String clickablePart = context.getString(clickableId);
-    final String message = context.getString(messageId, clickablePart);
-    final int clickableStart = message.lastIndexOf(clickablePart);
-    final int clickableEnd = clickableStart + clickablePart.length();
-    final Spannable span = Spannable.Factory.getInstance().newSpannable(message);
-    span.setSpan(clickableSpan, clickableStart, clickableEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-    return span;
   }
 }

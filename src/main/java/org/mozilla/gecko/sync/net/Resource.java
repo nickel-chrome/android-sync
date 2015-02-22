@@ -6,7 +6,7 @@ package org.mozilla.gecko.sync.net;
 
 import java.net.URI;
 
-import ch.boye.httpclientandroidlib.HttpEntity;
+import org.apache.http.HttpEntity;
 
 public interface Resource {
   public abstract URI getURI();

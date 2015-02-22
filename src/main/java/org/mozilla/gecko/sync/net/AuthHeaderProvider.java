@@ -6,10 +6,12 @@ package org.mozilla.gecko.sync.net;
 
 import java.security.GeneralSecurityException;
 
-import ch.boye.httpclientandroidlib.Header;
-import ch.boye.httpclientandroidlib.client.methods.HttpRequestBase;
-import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
-import ch.boye.httpclientandroidlib.protocol.BasicHttpContext;
+import org.apache.http.Header;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.protocol.BasicHttpContext;
+
 
 /**
  * An <code>AuthHeaderProvider</code> generates HTTP Authorization headers for
@@ -25,6 +27,6 @@ public interface AuthHeaderProvider {
    * @return HTTP Authorization header.
    * @throws GeneralSecurityException usually wrapping a more specific exception.
    */
-  Header getAuthHeader(HttpRequestBase request, BasicHttpContext context, DefaultHttpClient client)
+  Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, DefaultHttpClient client)
     throws GeneralSecurityException;
 }

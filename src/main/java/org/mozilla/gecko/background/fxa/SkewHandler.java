@@ -10,12 +10,11 @@ import java.util.HashMap;
 
 import org.mozilla.gecko.background.common.log.Logger;
 import org.mozilla.gecko.sync.net.Resource;
-
-import ch.boye.httpclientandroidlib.Header;
-import ch.boye.httpclientandroidlib.HttpHeaders;
-import ch.boye.httpclientandroidlib.HttpResponse;
-import ch.boye.httpclientandroidlib.impl.cookie.DateParseException;
-import ch.boye.httpclientandroidlib.impl.cookie.DateUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpResponse;
+import org.apache.http.impl.cookie.DateParseException;
+import org.apache.http.impl.cookie.DateUtils;
 
 public class SkewHandler {
   private static final String LOG_TAG = "SkewHandler";

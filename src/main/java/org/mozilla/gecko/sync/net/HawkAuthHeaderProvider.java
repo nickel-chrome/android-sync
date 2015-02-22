@@ -17,18 +17,17 @@ import java.util.Locale;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.mozilla.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.protocol.BasicHttpContext;
+
 import org.mozilla.gecko.background.common.log.Logger;
 import org.mozilla.gecko.sync.Utils;
-
-import ch.boye.httpclientandroidlib.Header;
-import ch.boye.httpclientandroidlib.HttpEntity;
-import ch.boye.httpclientandroidlib.HttpEntityEnclosingRequest;
-import ch.boye.httpclientandroidlib.client.methods.HttpRequestBase;
-import ch.boye.httpclientandroidlib.client.methods.HttpUriRequest;
-import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
-import ch.boye.httpclientandroidlib.message.BasicHeader;
-import ch.boye.httpclientandroidlib.protocol.BasicHttpContext;
 
 /**
  * An <code>AuthHeaderProvider</code> that returns an Authorization header for
@@ -106,7 +105,7 @@ public class HawkAuthHeaderProvider implements AuthHeaderProvider {
   }
 
   @Override
-  public Header getAuthHeader(HttpRequestBase request, BasicHttpContext context, DefaultHttpClient client) throws GeneralSecurityException {
+  public Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, DefaultHttpClient client) throws GeneralSecurityException {
     long timestamp = getTimestampSeconds();
     String nonce = Base64.encodeBase64String(Utils.generateRandomBytes(NONCE_LENGTH_IN_BYTES));
     String extra = "";
@@ -127,7 +126,7 @@ public class HawkAuthHeaderProvider implements AuthHeaderProvider {
    * @throws InvalidKeyException
    * @throws IOException
    */
-  protected Header getAuthHeader(HttpRequestBase request, BasicHttpContext context, DefaultHttpClient client,
+  protected Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, DefaultHttpClient client,
       long timestamp, String nonce, String extra, boolean includePayloadHash)
           throws InvalidKeyException, NoSuchAlgorithmException, IOException {
     if (timestamp < 0) {
@@ -195,7 +194,7 @@ public class HawkAuthHeaderProvider implements AuthHeaderProvider {
    * @throws NoSuchAlgorithmException
    * @throws IOException
    */
-  protected static String getPayloadHashString(HttpRequestBase request)
+  protected static String getPayloadHashString(HttpUriRequest request)
       throws UnsupportedEncodingException, NoSuchAlgorithmException, IOException, IllegalArgumentException {
     final boolean shouldComputePayloadHash = request instanceof HttpEntityEnclosingRequest;
     if (!shouldComputePayloadHash) {

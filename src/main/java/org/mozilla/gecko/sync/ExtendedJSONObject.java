@@ -15,7 +15,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.mozilla.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Base64;
 import org.mozilla.gecko.sync.UnexpectedJSONException.BadRequiredFieldJSONException;
 
 /**

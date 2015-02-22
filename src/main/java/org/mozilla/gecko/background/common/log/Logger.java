@@ -1,232 +1,76 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
 package org.mozilla.gecko.background.common.log;
 
-import java.io.PrintWriter;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import org.apache.commons.logging.LogFactory;
 
-import org.mozilla.gecko.background.common.GlobalConstants;
-import org.mozilla.gecko.background.common.log.writers.AndroidLevelCachingLogWriter;
-import org.mozilla.gecko.background.common.log.writers.AndroidLogWriter;
-import org.mozilla.gecko.background.common.log.writers.LogWriter;
-import org.mozilla.gecko.background.common.log.writers.PrintLogWriter;
-import org.mozilla.gecko.background.common.log.writers.SimpleTagLogWriter;
-import org.mozilla.gecko.background.common.log.writers.ThreadLocalTagLogWriter;
-
-import android.util.Log;
-
-/**
- * Logging helper class. Serializes all log operations (by synchronizing).
- */
 public class Logger {
-  public static final String LOGGER_TAG = "Logger";
-  public static final String DEFAULT_LOG_TAG = "GeckoLogger";
 
-  // For extra debugging.
-  public static boolean LOG_PERSONAL_INFORMATION = false;
+	protected static final String logtag = "weaveclient";
+	private static boolean initLog = false;
+	
+	public static void init(String level) {
+		initLog = true;
+	
+		//Initialise Apache commons logging
+		System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
+		System.setProperty("org.apache.commons.logging.simplelog.showlogname", "true");
+		System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
+		System.setProperty("org.apache.commons.logging.simplelog.defaultlog", level);
 
-  /**
-   * Allow each thread to use its own global log tag. This allows
-   * independent services to log as different sources.
-   *
-   * When your thread sets up logging, it should do something like the following:
-   *
-   *   Logger.setThreadLogTag("MyTag");
-   *
-   * The value is inheritable, so worker threads and such do not need to
-   * set the same log tag as their parent.
-   */
-  private static final InheritableThreadLocal<String> logTag = new InheritableThreadLocal<String>() {
-    @Override
-    protected String initialValue() {
-      return DEFAULT_LOG_TAG;
-    }
-  };
+		//Explicitly set log level for our default logger 
+		System.setProperty("org.apache.commons.logging.simplelog.log." + logtag, level);
+	}
 
-  public static void setThreadLogTag(final String logTag) {
-    Logger.logTag.set(logTag);
-  }
-  public static String getThreadLogTag() {
-    return Logger.logTag.get();
-  }
+	public static org.apache.commons.logging.Log getInstance() {
+		return getInstance(logtag);
+	}
 
-  /**
-   * Current set of writers to which we will log.
-   * <p>
-   * We want logging to be available while running tests, so we initialize
-   * this set statically.
-   */
-  protected final static Set<LogWriter> logWriters;
-  static {
-    final Set<LogWriter> defaultWriters = Logger.defaultLogWriters();
-    logWriters = new LinkedHashSet<LogWriter>(defaultWriters);
-  }
+	public static org.apache.commons.logging.Log getInstance(String context) {
+		if ( !initLog ) {
+			System.err.println("Log not initialised, setting default log level to warn");
+			init("warn");
+		}	
+		return LogFactory.getLog(context);
+	}
 
-  /**
-   * Default set of log writers to log to.
-   */
-  public final static Set<LogWriter> defaultLogWriters() {
-    final String processedPackage = GlobalConstants.BROWSER_INTENT_PACKAGE.replace("org.mozilla.", "");
+	public static void setLogLevel(String level) {
+		System.setProperty("org.apache.commons.logging.simplelog.defaultlog", level);
+		setLogLevel(logtag, level);
+	}
+	
+	public static void setLogLevel(String logger, String level) {
+		if ( !initLog ) {
+			System.err.println("Log not initialised, setting default log level to warn");
+			init("warn");
+		}
+		System.setProperty("org.apache.commons.logging.simplelog.log." + logger, level);
+	}
+	
+	public static void trace(String tag, String message) { getInstance(tag).trace(message); }
+	public static void debug(String tag, String message) { getInstance(tag).debug(message); }
+	public static void info(String tag, String message)  { getInstance(tag).info(message); }
+	public static void warn(String tag, String message)  { getInstance(tag).warn(message); }
+	public static void error(String tag, String message) { getInstance(tag).error(message); }
+	public static void fatal(String tag, String message) { getInstance(tag).fatal(message); }
 
-    final Set<LogWriter> defaultLogWriters = new LinkedHashSet<LogWriter>();
+	public static void t(String tag, String message)     { Logger.trace(tag, message); }
+	public static void d(String tag, String message)     { Logger.debug(tag, message); }
+	public static void i(String tag, String message)     { Logger.info (tag, message); }
+	public static void w(String tag, String message)     { Logger.warn (tag, message); }
+	public static void e(String tag, String message)     { Logger.error(tag, message); }
+	public static void wtf(String tag, String message)   { Logger.fatal(tag, message); }	
 
-    final LogWriter log = new AndroidLogWriter();
-    final LogWriter cache = new AndroidLevelCachingLogWriter(log);
+	public static void trace(String tag, Throwable e) { Logger.trace(tag, e.getLocalizedMessage()); }
+	public static void debug(String tag, Throwable e) { Logger.debug(tag, e.getLocalizedMessage()); }
+	public static void info(String tag, Throwable e)  { Logger.info (tag, e.getLocalizedMessage()); }
+	public static void warn(String tag, Throwable e)  { Logger.warn (tag, e.getLocalizedMessage()); }
+	public static void error(String tag, Throwable e) { Logger.error(tag, e.getLocalizedMessage()); }
+	public static void fatal(String tag, Throwable e) { Logger.fatal(tag, e.getLocalizedMessage()); }
 
-    final LogWriter single = new SimpleTagLogWriter(processedPackage, new ThreadLocalTagLogWriter(Logger.logTag, cache));
+	public static void trace(String tag, String message, Throwable e) { Logger.trace(tag, message + " - " + e.getLocalizedMessage()); }
+	public static void debug(String tag, String message, Throwable e) { Logger.debug(tag, message + " - " + e.getLocalizedMessage()); }
+	public static void info(String tag, String message, Throwable e)  { Logger.info (tag, message + " - " + e.getLocalizedMessage()); }
+	public static void warn(String tag, String message, Throwable e)  { Logger.warn (tag, message + " - " + e.getLocalizedMessage()); }
+	public static void error(String tag, String message, Throwable e) { Logger.error(tag, message + " - " + e.getLocalizedMessage()); }
+	public static void fatal(String tag, String message, Throwable e) { Logger.fatal(tag, message + " - " + e.getLocalizedMessage()); }
 
-    defaultLogWriters.add(single);
-    return defaultLogWriters;
-  }
-
-  public static synchronized void startLoggingTo(LogWriter logWriter) {
-    logWriters.add(logWriter);
-  }
-
-  public static synchronized void startLoggingToWriters(Set<LogWriter> writers) {
-    logWriters.addAll(writers);
-  }
-
-  public static synchronized void stopLoggingTo(LogWriter logWriter) {
-    try {
-      logWriter.close();
-    } catch (Exception e) {
-      Log.e(LOGGER_TAG, "Got exception closing and removing LogWriter " + logWriter + ".", e);
-    }
-    logWriters.remove(logWriter);
-  }
-
-  public static synchronized void stopLoggingToAll() {
-    for (LogWriter logWriter : logWriters) {
-      try {
-        logWriter.close();
-      } catch (Exception e) {
-        Log.e(LOGGER_TAG, "Got exception closing and removing LogWriter " + logWriter + ".", e);
-      }
-    }
-    logWriters.clear();
-  }
-
-  /**
-   * Write to only the default log writers.
-   */
-  public static synchronized void resetLogging() {
-    stopLoggingToAll();
-    logWriters.addAll(Logger.defaultLogWriters());
-  }
-
-  /**
-   * Start writing log output to stdout.
-   * <p>
-   * Use <code>resetLogging</code> to stop logging to stdout.
-   */
-  public static synchronized void startLoggingToConsole() {
-    setThreadLogTag("Test");
-    startLoggingTo(new PrintLogWriter(new PrintWriter(System.out, true)));
-  }
-
-  // Synchronized version for other classes to use.
-  public static synchronized boolean shouldLogVerbose(String logTag) {
-    for (LogWriter logWriter : logWriters) {
-      if (logWriter.shouldLogVerbose(logTag)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  public static void error(String tag, String message) {
-    Logger.error(tag, message, null);
-  }
-
-  public static void warn(String tag, String message) {
-    Logger.warn(tag, message, null);
-  }
-
-  public static void info(String tag, String message) {
-    Logger.info(tag, message, null);
-  }
-
-  public static void debug(String tag, String message) {
-    Logger.debug(tag, message, null);
-  }
-
-  public static void trace(String tag, String message) {
-    Logger.trace(tag, message, null);
-  }
-
-  public static void pii(String tag, String message) {
-    if (LOG_PERSONAL_INFORMATION) {
-      Logger.debug(tag, "$$PII$$: " + message);
-    }
-  }
-
-  public static synchronized void error(String tag, String message, Throwable error) {
-    Iterator<LogWriter> it = logWriters.iterator();
-    while (it.hasNext()) {
-      LogWriter writer = it.next();
-      try {
-        writer.error(tag, message, error);
-      } catch (Exception e) {
-        Log.e(LOGGER_TAG, "Got exception logging; removing LogWriter " + writer + ".", e);
-        it.remove();
-      }
-    }
-  }
-
-  public static synchronized void warn(String tag, String message, Throwable error) {
-    Iterator<LogWriter> it = logWriters.iterator();
-    while (it.hasNext()) {
-      LogWriter writer = it.next();
-      try {
-        writer.warn(tag, message, error);
-      } catch (Exception e) {
-        Log.e(LOGGER_TAG, "Got exception logging; removing LogWriter " + writer + ".", e);
-        it.remove();
-      }
-    }
-  }
-
-  public static synchronized void info(String tag, String message, Throwable error) {
-    Iterator<LogWriter> it = logWriters.iterator();
-    while (it.hasNext()) {
-      LogWriter writer = it.next();
-      try {
-        writer.info(tag, message, error);
-      } catch (Exception e) {
-        Log.e(LOGGER_TAG, "Got exception logging; removing LogWriter " + writer + ".", e);
-        it.remove();
-      }
-    }
-  }
-
-  public static synchronized void debug(String tag, String message, Throwable error) {
-    Iterator<LogWriter> it = logWriters.iterator();
-    while (it.hasNext()) {
-      LogWriter writer = it.next();
-      try {
-        writer.debug(tag, message, error);
-      } catch (Exception e) {
-        Log.e(LOGGER_TAG, "Got exception logging; removing LogWriter " + writer + ".", e);
-        it.remove();
-      }
-    }
-  }
-
-  public static synchronized void trace(String tag, String message, Throwable error) {
-    Iterator<LogWriter> it = logWriters.iterator();
-    while (it.hasNext()) {
-      LogWriter writer = it.next();
-      try {
-        writer.trace(tag, message, error);
-      } catch (Exception e) {
-        Log.e(LOGGER_TAG, "Got exception logging; removing LogWriter " + writer + ".", e);
-        it.remove();
-      }
-    }
-  }
 }

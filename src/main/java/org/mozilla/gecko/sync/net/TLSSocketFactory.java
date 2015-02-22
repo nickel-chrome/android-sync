@@ -10,10 +10,9 @@ import java.net.Socket;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.params.HttpParams;
 import org.mozilla.gecko.background.common.log.Logger;
-
-import ch.boye.httpclientandroidlib.conn.ssl.SSLSocketFactory;
-import ch.boye.httpclientandroidlib.params.HttpParams;
 
 public class TLSSocketFactory extends SSLSocketFactory {
   private static final String LOG_TAG = "TLSSocketFactory";

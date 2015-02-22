@@ -4,13 +4,14 @@
 
 package org.mozilla.gecko.sync.net;
 
-import ch.boye.httpclientandroidlib.Header;
-import ch.boye.httpclientandroidlib.auth.Credentials;
-import ch.boye.httpclientandroidlib.auth.UsernamePasswordCredentials;
-import ch.boye.httpclientandroidlib.client.methods.HttpRequestBase;
-import ch.boye.httpclientandroidlib.impl.auth.BasicScheme;
-import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
-import ch.boye.httpclientandroidlib.protocol.BasicHttpContext;
+import org.apache.http.Header;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.protocol.BasicHttpContext;
 
 /**
  * An <code>AuthHeaderProvider</code> that returns an HTTP Basic auth header.
@@ -42,7 +43,7 @@ public class BasicAuthHeaderProvider implements AuthHeaderProvider {
    * Basic.
    */
   @Override
-  public Header getAuthHeader(HttpRequestBase request, BasicHttpContext context, DefaultHttpClient client) {
+  public Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, DefaultHttpClient client) {
     Credentials creds = new UsernamePasswordCredentials(credentials);
 
     // This must be UTF-8 to generate the same Basic Auth headers as desktop for non-ASCII passwords.

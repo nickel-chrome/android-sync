@@ -13,8 +13,10 @@ import java.util.TreeMap;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
-import org.mozilla.apache.commons.codec.binary.Base64;
-import org.mozilla.apache.commons.codec.binary.StringUtils;
+
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.StringUtils;
+
 import org.mozilla.gecko.sync.ExtendedJSONObject;
 import org.mozilla.gecko.sync.NonObjectJSONException;
 import org.mozilla.gecko.sync.Utils;

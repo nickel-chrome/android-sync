@@ -4,7 +4,7 @@
 
 package org.mozilla.gecko.sync.net;
 
-import ch.boye.httpclientandroidlib.HttpResponse;
+import org.apache.http.HttpResponse;
 
 public interface HttpResponseObserver {
   /**

@@ -14,8 +14,7 @@ import org.mozilla.gecko.background.fxa.FxAccountClientException.FxAccountClient
 import org.mozilla.gecko.sync.ExtendedJSONObject;
 import org.mozilla.gecko.sync.Utils;
 import org.mozilla.gecko.sync.net.BaseResource;
-
-import ch.boye.httpclientandroidlib.HttpResponse;
+import org.apache.http.HttpResponse;
 
 public class FxAccountClient20 extends FxAccountClient10 implements FxAccountClient {
   protected static final String[] LOGIN_RESPONSE_REQUIRED_STRING_FIELDS = new String[] { JSON_KEY_UID, JSON_KEY_SESSIONTOKEN };

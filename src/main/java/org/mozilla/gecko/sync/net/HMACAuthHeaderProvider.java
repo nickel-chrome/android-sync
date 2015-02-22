@@ -13,16 +13,16 @@ import java.security.NoSuchAlgorithmException;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.mozilla.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Base64;
+
+import org.apache.http.Header;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.protocol.BasicHttpContext;
+
 import org.mozilla.gecko.background.common.log.Logger;
 import org.mozilla.gecko.sync.Utils;
-
-import ch.boye.httpclientandroidlib.Header;
-import ch.boye.httpclientandroidlib.client.methods.HttpRequestBase;
-import ch.boye.httpclientandroidlib.client.methods.HttpUriRequest;
-import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
-import ch.boye.httpclientandroidlib.message.BasicHeader;
-import ch.boye.httpclientandroidlib.protocol.BasicHttpContext;
 
 /**
  * An <code>AuthHeaderProvider</code> that returns an Authorization header for
@@ -64,7 +64,7 @@ public class HMACAuthHeaderProvider implements AuthHeaderProvider {
   }
 
   @Override
-  public Header getAuthHeader(HttpRequestBase request, BasicHttpContext context, DefaultHttpClient client) throws GeneralSecurityException {
+  public Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, DefaultHttpClient client) throws GeneralSecurityException {
     long timestamp = System.currentTimeMillis() / 1000;
     String nonce = Base64.encodeBase64String(Utils.generateRandomBytes(NONCE_LENGTH_IN_BYTES));
     String extra = "";
@@ -120,7 +120,7 @@ public class HMACAuthHeaderProvider implements AuthHeaderProvider {
    * @throws NoSuchAlgorithmException 
    * @throws InvalidKeyException 
    */
-  protected Header getAuthHeader(HttpRequestBase request, BasicHttpContext context, DefaultHttpClient client,
+  protected Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, DefaultHttpClient client,
       long timestamp, String nonce, String extra)
       throws UnsupportedEncodingException, InvalidKeyException, NoSuchAlgorithmException {
     // Validate timestamp.  From the MAC Authentication spec:
