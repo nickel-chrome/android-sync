@@ -28,7 +28,6 @@ import org.mozilla.gecko.tokenserver.TokenServerException.TokenServerInvalidCred
 import org.mozilla.gecko.tokenserver.TokenServerException.TokenServerMalformedRequestException;
 import org.mozilla.gecko.tokenserver.TokenServerException.TokenServerMalformedResponseException;
 import org.mozilla.gecko.tokenserver.TokenServerException.TokenServerUnknownServiceException;
-
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
@@ -65,7 +64,7 @@ public class TokenServerClient {
   protected final Executor executor;
   protected final URI uri;
 
-  public TokenServerClient(URI uri, Executor executor) {
+  public TokenServerClient(URI uri, Executor executor) {    
     if (uri == null) {
       throw new IllegalArgumentException("uri must not be null");
     }
@@ -321,6 +320,9 @@ public class TokenServerClient {
                                              final boolean conditionsAccepted,
                                              final String clientState,
                                              final TokenServerClientDelegate delegate) {
+	Logger.debug(LOG_TAG, "getTokenFromBrowserIDAssertion()");
+	Logger.debug(LOG_TAG, String.format("BaseResource.rewrite: %s", BaseResource.rewriteLocalhost));
+
     final BaseResource resource = new BaseResource(this.uri);
     resource.delegate = new TokenFetchResourceDelegate(this, resource, delegate,
                                                        assertion, clientState,

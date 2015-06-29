@@ -1,12 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   
-  <groupId>org.exfio.weave</groupId>
+  <groupId>org.exfio</groupId>
   <artifactId>fxaclient</artifactId>
-  <version>1.0.0-alpha-1</version>
+  <version>1.0.0-alpha-2</version>
   <packaging>jar</packaging>
     
-  <name>Firefox Account (FxA) Client for Java</name>
+  <name>FxaClient</name>
+  <description>Firefox Account (FxA) Client for Java</description>
   <url>https://github.com/nickel-chrome/fxaclient</url>
   
   <properties>

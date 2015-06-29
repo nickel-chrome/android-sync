@@ -64,7 +64,8 @@ public class BaseResource implements Resource {
 
   private boolean retryOnFailedRequest = true;
 
-  public static boolean rewriteLocalhost = true;
+  //Breaks desktops and shouldn't need to use loopback for fxaclient anyway
+  public static boolean rewriteLocalhost = false;
 
   private static final String LOG_TAG = "BaseResource";
 
