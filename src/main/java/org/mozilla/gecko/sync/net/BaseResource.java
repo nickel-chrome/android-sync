@@ -13,7 +13,6 @@ import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 
 import javax.net.ssl.SSLContext;
 
@@ -27,25 +26,23 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.AuthCache;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.protocol.ClientContext;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicAuthCache;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.params.HttpProtocolParams;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
@@ -71,9 +68,9 @@ public class BaseResource implements Resource {
 
   protected final URI uri;
   protected BasicHttpContext context;
-  protected DefaultHttpClient client;
+  protected HttpClient client;
   public    ResourceDelegate delegate;
-  protected HttpRequestBase request;
+  protected HttpUriRequest request;
   public final String charset = "utf-8";
 
   protected static WeakReference<HttpResponseObserver> httpResponseObserver = null;
@@ -143,7 +140,7 @@ public class BaseResource implements Resource {
    */
   private static void addAuthCacheToContext(HttpUriRequest request, HttpContext context) {
     AuthCache authCache = new BasicAuthCache();                // Not thread safe.
-    context.setAttribute(ClientContext.AUTH_CACHE, authCache);
+    context.setAttribute(HttpClientContext.AUTH_CACHE, authCache);
   }
 
   /**
@@ -156,7 +153,17 @@ public class BaseResource implements Resource {
 
     // We could reuse these client instances, except that we mess around
     // with their parameters… so we'd need a pool of some kind.
-    client = new DefaultHttpClient(getConnectionManager());
+
+    HttpClientBuilder clientBuilder = HttpClients.custom()
+      .setConnectionManager(getConnectionManager())
+      .setMaxConnTotal(MAX_TOTAL_CONNECTIONS)
+      .setMaxConnPerRoute(MAX_CONNECTIONS_PER_ROUTE);
+    
+    final String userAgent = delegate.getUserAgent();
+    if (userAgent != null) {
+      clientBuilder.setUserAgent(userAgent);
+    }
+    client = clientBuilder.build();
 
     // TODO: Eventually we should use Apache HttpAsyncClient. It's not out of alpha yet.
     // Until then, we synchronously make the request, then invoke our delegate's callback.
@@ -168,49 +175,66 @@ public class BaseResource implements Resource {
         Logger.debug(LOG_TAG, "Added auth header.");
       }
     }
-
-    addAuthCacheToContext(request, context);
-
-    HttpParams params = client.getParams();
-    HttpConnectionParams.setConnectionTimeout(params, delegate.connectionTimeout());
-    HttpConnectionParams.setSoTimeout(params, delegate.socketTimeout());
-    HttpConnectionParams.setStaleCheckingEnabled(params, false);
-    HttpProtocolParams.setContentCharset(params, charset);
-    HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-    final String userAgent = delegate.getUserAgent();
-    if (userAgent != null) {
-      HttpProtocolParams.setUserAgent(params, userAgent);
-    }
+    addAuthCacheToContext(request, context);    
+    
     delegate.addHeaders(request, client);
   }
 
+  protected HttpUriRequest buildRequest(String method, URI uri) {
+    return buildRequest(method, uri, null);
+  }
+  
+  protected HttpUriRequest buildRequest(String method, URI uri, HttpEntity entity) {
+
+    RequestConfig requestConfig = RequestConfig.custom()
+      .setConnectTimeout(delegate.connectionTimeout())
+      .setSocketTimeout(delegate.socketTimeout())
+      .setStaleConnectionCheckEnabled(false)
+      .build();
+
+    RequestBuilder requestBuilder = RequestBuilder.create(method)
+      .setVersion(HttpVersion.HTTP_1_1)
+      .setUri(uri)
+      .setConfig(requestConfig);
+    
+    if (entity != null) {
+      requestBuilder.setEntity(entity);
+    }
+    
+    return requestBuilder.build();
+  }
+
   private static final Object connManagerMonitor = new Object();
-  private static ClientConnectionManager connManager;
+  private static HttpClientConnectionManager connManager;
 
   // Call within a synchronized block on connManagerMonitor.
-  private static ClientConnectionManager enableTLSConnectionManager() throws KeyManagementException, NoSuchAlgorithmException  {
-    SSLContext sslContext = SSLContext.getInstance("TLS");
-    sslContext.init(null, null, new SecureRandom());
-    SSLSocketFactory sf = new TLSSocketFactory(sslContext);
-    SchemeRegistry schemeRegistry = new SchemeRegistry();
-    schemeRegistry.register(new Scheme("https", 443, sf));
-    schemeRegistry.register(new Scheme("http", 80, new PlainSocketFactory()));
-    ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager(schemeRegistry);
+  private static HttpClientConnectionManager enableTLSConnectionManager() throws KeyManagementException, NoSuchAlgorithmException  {
+    SSLContext sslContext = SSLContexts.custom()
+      .useProtocol("TLS")
+      .build();
 
-    cm.setMaxTotal(MAX_TOTAL_CONNECTIONS);
-    cm.setDefaultMaxPerRoute(MAX_CONNECTIONS_PER_ROUTE);
-    connManager = cm;
+    SSLConnectionSocketFactory sfssl = new SSLConnectionSocketFactory(sslContext);
+    
+    ConnectionSocketFactory sfplain = new PlainConnectionSocketFactory();
+    
+    Registry<ConnectionSocketFactory> sfreg = RegistryBuilder.<ConnectionSocketFactory>create()
+      .register("http", sfplain)
+      .register("https", sfssl)
+      .build();
+
+    HttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(sfreg);
+    
     return cm;
   }
 
-  public static ClientConnectionManager getConnectionManager() throws KeyManagementException, NoSuchAlgorithmException
+  public static HttpClientConnectionManager getConnectionManager() throws KeyManagementException, NoSuchAlgorithmException
                                                          {
     // TODO: shutdown.
     synchronized (connManagerMonitor) {
-      if (connManager != null) {
-        return connManager;
+      if (connManager == null) {
+        connManager = enableTLSConnectionManager();
       }
-      return enableTLSConnectionManager();
+      return connManager;
     }
   }
 
@@ -218,7 +242,7 @@ public class BaseResource implements Resource {
    * Do some cleanup, so we don't need the stale connection check.
    */
   public static void closeExpiredConnections() {
-    ClientConnectionManager connectionManager;
+    HttpClientConnectionManager connectionManager;
     synchronized (connManagerMonitor) {
       connectionManager = connManager;
     }
@@ -230,7 +254,7 @@ public class BaseResource implements Resource {
   }
 
   public static void shutdownConnectionManager() {
-    ClientConnectionManager connectionManager;
+    HttpClientConnectionManager connectionManager;
     synchronized (connManagerMonitor) {
       connectionManager = connManager;
       connManager = null;
@@ -287,7 +311,7 @@ public class BaseResource implements Resource {
     this.execute();
   }
 
-  private void go(HttpRequestBase request) {
+  private void go(HttpUriRequest request) {
    if (delegate == null) {
       throw new IllegalArgumentException("No delegate provided.");
     }
@@ -313,8 +337,8 @@ public class BaseResource implements Resource {
 
   @Override
   public void get() {
-    Logger.debug(LOG_TAG, "HTTP GET " + this.uri.toASCIIString());
-    this.go(new HttpGet(this.uri));
+    Logger.debug(LOG_TAG, "HTTP GET " + this.uri.toASCIIString());   
+    this.go(buildRequest("GET", this.uri));
   }
 
   /**
@@ -330,23 +354,19 @@ public class BaseResource implements Resource {
   @Override
   public void delete() {
     Logger.debug(LOG_TAG, "HTTP DELETE " + this.uri.toASCIIString());
-    this.go(new HttpDelete(this.uri));
+    this.go(buildRequest("DELETE", this.uri));
   }
 
   @Override
   public void post(HttpEntity body) {
     Logger.debug(LOG_TAG, "HTTP POST " + this.uri.toASCIIString());
-    HttpPost request = new HttpPost(this.uri);
-    request.setEntity(body);
-    this.go(request);
+    this.go(buildRequest("POST", this.uri, body));
   }
 
   @Override
   public void put(HttpEntity body) {
     Logger.debug(LOG_TAG, "HTTP PUT " + this.uri.toASCIIString());
-    HttpPut request = new HttpPut(this.uri);
-    request.setEntity(body);
-    this.go(request);
+    this.go(buildRequest("PUT", this.uri, body));
   }
 
   protected static StringEntity stringEntityWithContentTypeApplicationJSON(String s) throws UnsupportedEncodingException {

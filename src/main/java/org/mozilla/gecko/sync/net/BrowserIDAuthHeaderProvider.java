@@ -5,9 +5,10 @@
 package org.mozilla.gecko.sync.net;
 
 import org.apache.http.Header;
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.HttpClient;
+//import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.DefaultHttpClient;
+//import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.BasicHttpContext;
 
@@ -30,7 +31,7 @@ public class BrowserIDAuthHeaderProvider implements AuthHeaderProvider {
   }
 
   @Override
-  public Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, DefaultHttpClient client) {
+  public Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, HttpClient client) {
     Header header = new BasicHeader("Authorization", "BrowserID " + assertion);
 
     return header;

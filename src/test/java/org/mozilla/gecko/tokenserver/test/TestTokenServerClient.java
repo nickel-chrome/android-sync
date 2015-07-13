@@ -33,12 +33,12 @@ import org.mozilla.gecko.tokenserver.TokenServerException.TokenServerMalformedRe
 import org.mozilla.gecko.tokenserver.TokenServerException.TokenServerMalformedResponseException;
 import org.mozilla.gecko.tokenserver.TokenServerException.TokenServerUnknownServiceException;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
-
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHttpResponse;
@@ -193,7 +193,7 @@ public class TestTokenServerClient {
       this.request = new HttpGet(this.uri);
     }
 
-    public HttpRequestBase prepareHeadersAndReturn() throws Exception {
+    public HttpUriRequest prepareHeadersAndReturn() throws Exception {
       super.prepareClient();
       return request;
     }
@@ -235,7 +235,7 @@ public class TestTokenServerClient {
       }
     };
 
-    HttpRequestBase request = resource.prepareHeadersAndReturn();
+    HttpUriRequest request = resource.prepareHeadersAndReturn();
     Assert.assertEquals("abcdef", request.getFirstHeader("X-Client-State").getValue());
     Assert.assertEquals("1", request.getFirstHeader("X-Conditions-Accepted").getValue());
   }

@@ -7,9 +7,8 @@ package org.mozilla.gecko.sync.net;
 import java.security.GeneralSecurityException;
 
 import org.apache.http.Header;
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.BasicHttpContext;
 
 
@@ -27,6 +26,6 @@ public interface AuthHeaderProvider {
    * @return HTTP Authorization header.
    * @throws GeneralSecurityException usually wrapping a more specific exception.
    */
-  Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, DefaultHttpClient client)
+  Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, HttpClient client)
     throws GeneralSecurityException;
 }

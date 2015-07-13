@@ -14,13 +14,11 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
-
 import org.apache.http.Header;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.BasicHttpContext;
-
 import org.mozilla.gecko.background.common.log.Logger;
 import org.mozilla.gecko.sync.Utils;
 
@@ -64,7 +62,7 @@ public class HMACAuthHeaderProvider implements AuthHeaderProvider {
   }
 
   @Override
-  public Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, DefaultHttpClient client) throws GeneralSecurityException {
+  public Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, HttpClient client) throws GeneralSecurityException {
     long timestamp = System.currentTimeMillis() / 1000;
     String nonce = Base64.encodeBase64String(Utils.generateRandomBytes(NONCE_LENGTH_IN_BYTES));
     String extra = "";
@@ -120,7 +118,7 @@ public class HMACAuthHeaderProvider implements AuthHeaderProvider {
    * @throws NoSuchAlgorithmException 
    * @throws InvalidKeyException 
    */
-  protected Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, DefaultHttpClient client,
+  protected Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, HttpClient client,
       long timestamp, String nonce, String extra)
       throws UnsupportedEncodingException, InvalidKeyException, NoSuchAlgorithmException {
     // Validate timestamp.  From the MAC Authentication spec:

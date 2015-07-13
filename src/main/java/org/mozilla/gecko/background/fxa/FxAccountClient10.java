@@ -23,7 +23,6 @@ import javax.crypto.Mac;
 import org.json.simple.JSONObject;
 import org.mozilla.gecko.background.fxa.FxAccountClientException.FxAccountClientMalformedResponseException;
 import org.mozilla.gecko.background.fxa.FxAccountClientException.FxAccountClientRemoteException;
-import org.mozilla.gecko.fxa.FxAccountConstants;
 import org.mozilla.gecko.sync.ExtendedJSONObject;
 import org.mozilla.gecko.sync.SyncConstants;
 import org.mozilla.gecko.sync.Utils;
@@ -39,8 +38,8 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpUriRequest;
 
 /**
  * An HTTP client for talking to an FxAccount server.
@@ -312,7 +311,7 @@ public class FxAccountClient10 {
     }
 
     @Override
-    public void addHeaders(HttpRequestBase request, DefaultHttpClient client) {
+    public void addHeaders(HttpUriRequest request, HttpClient client) {
       super.addHeaders(request, client);
 
       // The basics.

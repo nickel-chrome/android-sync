@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Date;
 import java.util.Scanner;
 
 import org.json.simple.parser.ParseException;
@@ -19,8 +20,7 @@ import org.mozilla.gecko.sync.Utils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.impl.cookie.DateParseException;
-import org.apache.http.impl.cookie.DateUtils;
+import org.apache.http.client.utils.DateUtils;
 
 public class SyncResponse {
   private static final String HEADER_RETRY_AFTER = "retry-after";
@@ -148,14 +148,14 @@ public class SyncResponse {
       // Fall through to try date format.
     }
 
-    try {
-      final long then = DateUtils.parseDate(retryAfter).getTime();
-      final long now  = System.currentTimeMillis();
-      return (int)((then - now) / 1000);     // Convert milliseconds to seconds.
-    } catch (DateParseException e) {
+    Date thenDate = DateUtils.parseDate(retryAfter);
+    if (thenDate == null) {
       Logger.warn(LOG_TAG, "Retry-After header neither integer nor date: " + retryAfter);
       return -1;
     }
+    final long then = thenDate.getTime();
+    final long now  = System.currentTimeMillis();
+    return (int)((then - now) / 1000);     // Convert milliseconds to seconds.
   }
 
   /**

@@ -32,8 +32,8 @@ import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.message.BasicHeader;
 
 /**
@@ -304,7 +304,7 @@ public class TokenServerClient {
     }
 
     @Override
-    public void addHeaders(HttpRequestBase request, DefaultHttpClient client) {
+    public void addHeaders(HttpUriRequest request, HttpClient client) {
       String host = request.getURI().getHost();
       request.setHeader(new BasicHeader(HttpHeaders.HOST, host));
       if (clientState != null) {

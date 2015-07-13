@@ -4,14 +4,13 @@
 
 package org.mozilla.gecko.sync.net;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.http.Header;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.util.EncodingUtils;
 
 /**
  * An <code>AuthHeaderProvider</code> that returns an HTTP Basic auth header.
@@ -43,10 +42,7 @@ public class BasicAuthHeaderProvider implements AuthHeaderProvider {
    * Basic.
    */
   @Override
-  public Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, DefaultHttpClient client) {
-    Credentials creds = new UsernamePasswordCredentials(credentials);
-
-    // This must be UTF-8 to generate the same Basic Auth headers as desktop for non-ASCII passwords.
-    return BasicScheme.authenticate(creds, "UTF-8", false);
+  public Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, HttpClient client) {	  
+    return new BasicHeader("Authorization", "Basic " + Base64.encodeBase64String(EncodingUtils.getBytes(credentials, "UTF-8")));
   }
 }

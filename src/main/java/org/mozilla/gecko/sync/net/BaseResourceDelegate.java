@@ -4,8 +4,8 @@
 
 package org.mozilla.gecko.sync.net;
 
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpUriRequest;
 
 /**
  * Shared abstract class for resource delegate that use the same timeouts
@@ -39,6 +39,6 @@ public abstract class BaseResourceDelegate implements ResourceDelegate {
   }
 
   @Override
-  public void addHeaders(HttpRequestBase request, DefaultHttpClient client) {
+  public void addHeaders(HttpUriRequest request, HttpClient client) {
   }
 }

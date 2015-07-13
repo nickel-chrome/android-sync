@@ -6,6 +6,7 @@ package org.mozilla.gecko.background.fxa;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.HashMap;
 
 import org.mozilla.gecko.background.common.log.Logger;
@@ -13,8 +14,7 @@ import org.mozilla.gecko.sync.net.Resource;
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
-import org.apache.http.impl.cookie.DateParseException;
-import org.apache.http.impl.cookie.DateUtils;
+import org.apache.http.client.utils.DateUtils;
 
 public class SkewHandler {
   private static final String LOG_TAG = "SkewHandler";
@@ -59,13 +59,13 @@ public class SkewHandler {
   }
 
   public boolean updateSkewFromHTTPDateString(String date, long now) {
-    try {
-      final long millis = DateUtils.parseDate(date).getTime();
-      return updateSkewFromServerMillis(millis, now);
-    } catch (DateParseException e) {
+    Date tmpDate = DateUtils.parseDate(date);
+    if (tmpDate == null) {
       Logger.warn(LOG_TAG, "Unexpected: invalid Date header from " + this.hostname);
       return false;
     }
+    final long millis = tmpDate.getTime();
+    return updateSkewFromServerMillis(millis, now);
   }
 
   public boolean updateSkewFromDateHeader(Header header, long now) {

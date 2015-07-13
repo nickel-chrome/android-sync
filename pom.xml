@@ -3,7 +3,7 @@
   
   <groupId>org.exfio</groupId>
   <artifactId>fxaclient</artifactId>
-  <version>1.0.0-alpha-2</version>
+  <version>1.0.0-alpha-3</version>
   <packaging>jar</packaging>
     
   <name>FxaClient</name>
@@ -33,6 +33,18 @@
         </configuration>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
 	    <groupId>org.apache.maven.plugins</groupId>
 	    <artifactId>maven-surefire-plugin</artifactId>
 	    <version>2.18.1</version>
@@ -40,13 +52,121 @@
           <skipTests>true</skipTests>
 	    </configuration>
       </plugin>
-    </plugins>
+      
+      <!--
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>jarjar-maven-plugin</artifactId>
+        <version>1.9</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>jarjar</goal>
+            </goals>
+            <configuration>
+              <includes>
+                <include>commons-codec:commons-codec</include>
+              </includes>
+              <rules>
+                <rule>
+                  <pattern>org.apache.commons.codec.binary.**</pattern>	
+                  <result>org.exfio.apache.commons.codec.binary.@1</result>
+                </rule>
+                <rule>
+                  <pattern>org.apache.commons.codec.BinaryDecoder</pattern>
+                  <result>org.exfio.apache.commons.codec.BinaryDecoder</result>
+                </rule>
+                <rule>
+                  <pattern>org.apache.commons.codec.BinaryEncoder</pattern>
+                  <result>org.exfio.apache.commons.codec.BinaryEncoder</result>
+                </rule>
+                <rule>
+                  <pattern>org.apache.commons.codec.Decoder</pattern>
+                  <result>org.exfio.apache.commons.codec.Decoder</result>
+                </rule>
+                <rule>
+                  <pattern>org.apache.commons.codec.DecoderException</pattern>
+                  <result>org.exfio.apache.commons.codec.DecoderException</result>
+                </rule>
+                <rule>
+                  <pattern>org.apache.commons.codec.Encoder</pattern>
+                  <result>org.exfio.apache.commons.codec.Encoder</result>
+                </rule>
+                <rule>
+                  <pattern>org.apache.commons.codec.EncoderException</pattern>
+                  <result>org.exfio.apache.commons.codec.EncoderException</result>
+                </rule>
+                <keep>
+                  <pattern>org.mozilla.**</pattern>	
+                </keep>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      -->
+      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>2.4</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>  
+              <artifactSet>
+                <includes>
+                  <include>commons-codec:commons-codec</include>
+                  <include>org.apache.httpcomponents:httpcore</include>
+                </includes>
+              </artifactSet>
+              <filters>
+                <filter>
+                  <artifact>commons-codec:commons-codec</artifact>
+                  <includes>
+                    <include>org/apache/commons/codec/binary/**</include>
+                  </includes>
+                </filter>                
+                <filter>
+                  <artifact>org.apache.httpcomponents:httpcore</artifact>
+                  <includes>
+                    <include>org/apache/http/util/**</include>
+                  </includes>
+                </filter>                
+                </filters>
+              <relocations>
+                <relocation>
+                  <pattern>org.apache.commons.codec.binary</pattern>	
+                  <shadedPattern>org.exfio.apache.commons.codec.binary</shadedPattern>                  
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.http.util</pattern>	
+                  <shadedPattern>org.exfio.apache.http.util</shadedPattern>                  
+                </relocation>
+                </relocations>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      
+      
+    </plugins>    
   </build>
+  
   <dependencies>
     <dependency>
 	  <groupId>commons-logging</groupId>
 	  <artifactId>commons-logging</artifactId>
 	  <version>1.1.3</version>
+    </dependency>  
+    <dependency>
+	  <groupId>commons-codec</groupId>
+	  <artifactId>commons-codec</artifactId>
+	  <version>1.6</version>
     </dependency>  
     <dependency>
 	  <groupId>org.apache.httpcomponents</groupId>

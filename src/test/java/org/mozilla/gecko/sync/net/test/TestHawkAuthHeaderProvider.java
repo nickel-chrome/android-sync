@@ -13,14 +13,12 @@ import java.security.NoSuchAlgorithmException;
 
 import org.junit.Test;
 import org.mozilla.gecko.sync.net.HawkAuthHeaderProvider;
-
 import org.apache.http.Header;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.BasicHttpContext;
 
@@ -49,7 +47,7 @@ public class TestHawkAuthHeaderProvider {
 
     // Public for testing.
     @Override
-    public Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, DefaultHttpClient client,
+    public Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, HttpClient client,
         long timestamp, String nonce, String extra, boolean includePayloadHash)
             throws InvalidKeyException, NoSuchAlgorithmException, IOException {
       return super.getAuthHeader(request, context, client, timestamp, nonce, extra, includePayloadHash);

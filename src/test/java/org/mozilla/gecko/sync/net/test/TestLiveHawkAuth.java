@@ -22,10 +22,9 @@ import org.mozilla.gecko.sync.net.SyncResponse;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.client.HttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.BasicHttpContext;
 
@@ -98,7 +97,7 @@ public class TestLiveHawkAuth {
     // PUT with *bad* payload verification.
     HawkAuthHeaderProvider provider = new HawkAuthHeaderProvider(id, key, true, 0L) {
       @Override
-      public Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, DefaultHttpClient client) throws GeneralSecurityException {
+      public Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, HttpClient client) throws GeneralSecurityException {
         Header header = super.getAuthHeader(request, context, client);
         // Here's a cheap way of breaking the hash.
         String newValue = header.getValue().replaceAll("hash=\"....", "hash=\"XXXX");

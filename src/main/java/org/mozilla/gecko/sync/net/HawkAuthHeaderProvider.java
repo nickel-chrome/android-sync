@@ -21,11 +21,10 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.BasicHttpContext;
-
 import org.mozilla.gecko.background.common.log.Logger;
 import org.mozilla.gecko.sync.Utils;
 
@@ -105,7 +104,7 @@ public class HawkAuthHeaderProvider implements AuthHeaderProvider {
   }
 
   @Override
-  public Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, DefaultHttpClient client) throws GeneralSecurityException {
+  public Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, HttpClient client) throws GeneralSecurityException {
     long timestamp = getTimestampSeconds();
     String nonce = Base64.encodeBase64String(Utils.generateRandomBytes(NONCE_LENGTH_IN_BYTES));
     String extra = "";
@@ -126,7 +125,7 @@ public class HawkAuthHeaderProvider implements AuthHeaderProvider {
    * @throws InvalidKeyException
    * @throws IOException
    */
-  protected Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, DefaultHttpClient client,
+  protected Header getAuthHeader(HttpUriRequest request, BasicHttpContext context, HttpClient client,
       long timestamp, String nonce, String extra, boolean includePayloadHash)
           throws InvalidKeyException, NoSuchAlgorithmException, IOException {
     if (timestamp < 0) {

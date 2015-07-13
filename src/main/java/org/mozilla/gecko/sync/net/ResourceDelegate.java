@@ -9,8 +9,8 @@ import java.security.GeneralSecurityException;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpUriRequest;
 
 /**
  * ResourceDelegate implementers must ensure that HTTP responses
@@ -24,7 +24,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 public interface ResourceDelegate {
   // Request augmentation.
   AuthHeaderProvider getAuthHeaderProvider();
-  void addHeaders(HttpRequestBase request, DefaultHttpClient client);
+  void addHeaders(HttpUriRequest request, HttpClient client);
 
   /**
    * The value of the User-Agent header to include with the request.
