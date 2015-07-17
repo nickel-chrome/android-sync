@@ -12,7 +12,36 @@ import javax.crypto.ShortBufferException;
 import javax.crypto.spec.SecretKeySpec;
 
 public class PBKDF2 {
-  public static byte[] pbkdf2SHA256(byte[] password, byte[] salt, int c, int dkLen)
+	
+  private static String cryptoProvider = null;
+	
+  public static String getCryptoProvider() {
+    return cryptoProvider;
+  }
+
+  public static void setCryptoProvider(String provider) {
+    cryptoProvider = provider;
+  }
+		
+  public static byte[] pbkdf2SHA256(byte[] password, byte[] salt, int c, int dkLen) throws GeneralSecurityException {
+	  if ( cryptoProvider != null ) {			
+		  throw new AssertionError("Bouncy Castle/Spongy Castle implementation not yet supported");
+		  //TODO support both bouncy castle and spongy castle package names
+		  //PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator(new SHA256Digest());
+		  //generator.init(PBEParametersGenerator.PKCS5PasswordToUTF8Bytes(password), salt, iterations);
+		  //KeyParameter key = (KeyParameter)generator.generateDerivedMacParameters(keySizeInBits);
+		 
+		  //OR alternatively find way to call PBKDF2WithHmacSHA256 from Java Security implementation
+		  //SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+		  //KeySpec spec = new PBEKeySpec(cleartext.toCharArray(), salt, iterations, length);
+		  //digestBin = factory.generateSecret(spec).getEncoded();
+
+	  } else {
+		  return MozPbkdf2SHA256(password, salt, c, dkLen);
+	  }
+  }  
+  
+  public static byte[] MozPbkdf2SHA256(byte[] password, byte[] salt, int c, int dkLen)
       throws GeneralSecurityException {
     final String algorithm = "HmacSHA256";
     SecretKeySpec keyspec = new SecretKeySpec(password, algorithm);

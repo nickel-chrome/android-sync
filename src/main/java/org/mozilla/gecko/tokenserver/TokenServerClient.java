@@ -218,19 +218,11 @@ public class TokenServerClient {
       throw new TokenServerException(errorList);
     }
 
-    try {
-      result.throwIfFieldsMissingOrMisTyped(new String[] { JSON_KEY_ID, JSON_KEY_KEY, JSON_KEY_API_ENDPOINT }, String.class);
-      result.throwIfFieldsMissingOrMisTyped(new String[] { JSON_KEY_UID }, Long.class);
-    } catch (BadRequiredFieldJSONException e ) {
-      throw new TokenServerMalformedResponseException(null, e);
-    }
+    TokenServerToken token = fromJSONObject(result);
 
-    Logger.debug(LOG_TAG, "Successful token response: " + result.getString(JSON_KEY_ID));
+    Logger.debug(LOG_TAG, "Successful token response: " + token.id);
 
-    return new TokenServerToken(result.getString(JSON_KEY_ID),
-        result.getString(JSON_KEY_KEY),
-        result.get(JSON_KEY_UID).toString(),
-        result.getString(JSON_KEY_API_ENDPOINT));
+    return token;
   }
 
   public static class TokenFetchResourceDelegate extends BaseResourceDelegate {
@@ -328,5 +320,21 @@ public class TokenServerClient {
                                                        assertion, clientState,
                                                        conditionsAccepted);
     resource.get();
+  }
+  
+  public static TokenServerToken fromJSONObject(ExtendedJSONObject jsonObject) throws TokenServerMalformedResponseException {
+	    try {
+	        jsonObject.throwIfFieldsMissingOrMisTyped(new String[] { JSON_KEY_ID, JSON_KEY_KEY, JSON_KEY_API_ENDPOINT }, String.class);
+	        jsonObject.throwIfFieldsMissingOrMisTyped(new String[] { JSON_KEY_UID, JSON_KEY_DURATION }, Long.class);
+	      } catch (BadRequiredFieldJSONException e ) {
+	        throw new TokenServerMalformedResponseException(null, e);
+	      }
+
+	      return new TokenServerToken(jsonObject.getString(JSON_KEY_ID),
+	          jsonObject.getString(JSON_KEY_KEY),
+	          jsonObject.get(JSON_KEY_UID).toString(),
+	          jsonObject.getString(JSON_KEY_API_ENDPOINT),
+	          jsonObject.getLong(JSON_KEY_DURATION)          
+	      );
   }
 }
