@@ -95,7 +95,12 @@ public class TestPBKDF2 {
       final String expectedStr)
           throws GeneralSecurityException, UnsupportedEncodingException {
     long start = System.currentTimeMillis();
-    byte[] key = PBKDF2.pbkdf2SHA256(p.getBytes("US-ASCII"), s.getBytes("US-ASCII"), c, dkLen);
+    byte[] key = null;
+	try {
+		key = PBKDF2.pbkdf2SHA256(p.getBytes("US-ASCII"), s.getBytes("US-ASCII"), c, dkLen);
+	} catch (NoSuchMethodException e) {
+		//Fail quietly
+	}
     assertNotNull(key);
 
     long end = System.currentTimeMillis();

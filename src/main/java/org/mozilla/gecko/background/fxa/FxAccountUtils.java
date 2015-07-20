@@ -120,6 +120,7 @@ public class FxAccountUtils {
    */
   public static byte[] generateQuickStretchedPW(byte[] emailUTF8, byte[] passwordUTF8) throws GeneralSecurityException, UnsupportedEncodingException {
     byte[] S = FxAccountUtils.KWE("quickStretch", emailUTF8);
+    
     try {
       return NativeCrypto.pbkdf2SHA256(passwordUTF8, S, NUMBER_OF_QUICK_STRETCH_ROUNDS, 32);
     } catch (final LinkageError e) {
@@ -128,8 +129,14 @@ public class FxAccountUtils {
       // is called; LinkageError is their common ancestor.
       Logger.warn(LOG_TAG, "Got throwable stretching password using native pbkdf2SHA256 " +
           "implementation; ignoring and using Java implementation.", e);
-      return PBKDF2.pbkdf2SHA256(passwordUTF8, S, NUMBER_OF_QUICK_STRETCH_ROUNDS, 32);
     }
+    
+    //Note: We only get here if the Native call failed
+    try {
+		return PBKDF2.pbkdf2SHA256(passwordUTF8, S, NUMBER_OF_QUICK_STRETCH_ROUNDS, 32);
+	} catch (NoSuchMethodException e) {
+		throw new GeneralSecurityException("Failed to load crypto implementation - " + e.getMessage());
+	}
   }
 
   /**
